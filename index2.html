@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mapa con Capas Habilitables</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body, html { margin:0; padding:0; height:100%; }
+        #map { width: 100%; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Aquí deberías cargar tus variables JSON, ejemplo: -->
+    <!-- <script src="data/json_1111111_13.js"></script> -->
+    <!-- <script src="data/json_ZONASDEINTERESparsed_12.js"></script> -->
+    <!-- <script src="data/json_EducacinEstebanEcheverraparsed_10.js"></script> -->
+
+    <script>
+        // Inicializo el mapa centrado donde quieras (acá pongo Buenos Aires)
+        var map = L.map('map').setView([-34.75, -58.55], 11);
+
+        // Capa base Google Satellite
+        var layer_GoogleSatellite_0 = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3'],
+            attribution: 'Google Satellite'
+        }).addTo(map);
+
+        // Capa DEUDAS
+        var layer_1111111_13 = L.geoJson(json_1111111_13, {
+            style: function(feature) {
+                var val = feature.properties['DEUDAS_DEUDA_NUM'];
+                var fillColor = 'rgba(0,255,38,0.8)';
+                if(val >= 5028 && val <= 337520) fillColor = 'rgba(0,255,38,0.8)';
+                else if(val > 337520 && val <= 670013) fillColor = 'rgba(51,204,31,0.8)';
+                else if(val > 670013 && val <= 1002505) fillColor = 'rgba(102,153,23,0.8)';
+                else if(val > 1002505 && val <= 1334997) fillColor = 'rgba(153,102,15,0.8)';
+                else if(val > 1334997 && val <= 1667490) fillColor = 'rgba(204,51,8,0.8)';
+                else if(val > 1667490) fillColor = 'rgba(255,0,0,0.8)';
+                return {
+                    color: 'rgba(35,35,35,0.8)',
+                    weight: 1,
+                    fillColor: fillColor,
+                    fillOpacity: 1,
+                    interactive: true,
+                };
+            },
+            onEachFeature: function(feature, layer) {
+                if(feature.properties && feature.properties['DEUDAS_DEUDA_NUM']) {
+                    layer.bindPopup('Deuda: ' + feature.properties['DEUDAS_DEUDA_NUM']);
+                }
+            }
+        });
+
+        // Capa ZONAS DE INTERES
+        var layer_ZONASDEINTERESparsed_12 = L.geoJson(json_ZONASDEINTERESparsed_12, {
+            onEachFeature: function(feature, layer) {
+                if(feature.properties && feature.properties['NOMBRE']) {
+                    layer.bindPopup('Zona: ' + feature.properties['NOMBRE']);
+                }
+            }
+        });
+
+        // Capa EDUCACION
+        var layer_Educacion = L.geoJson(json_EducacinEstebanEcheverraparsed_10, {
+            pointToLayer: function(feature, latlng) {
+                var fillColor = feature.properties['SECTOR'] === '1.0' ? 'rgba(219,30,42,1.0)' : 'rgba(72,123,182,1.0)';
+                var color = feature.properties['SECTOR'] === '1.0' ? 'rgba(128,17,25,1.0)' : 'rgba(50,87,128,1.0)';
+                return L.circleMarker(latlng, {
+                    radius: 8,
+                    fillColor: fillColor,
+                    color: color,
+                    weight: 2,
+                    fillOpacity: 1,
+                    interactive: true
+                });
+            },
+            onEachFeature: function(feature, layer) {
+                if(feature.properties && feature.properties['NOMBRE']) {
+                    layer.bindPopup('Nombre: ' + feature.properties['NOMBRE']);
+                }
+            }
+        });
+
+        // Control de capas
+        var baseLayers = {
+            "Google Satellite": layer_GoogleSatellite_0
+        };
+
+        var overlays = {
+            "Deudas": layer_1111111_13,
+            "Zonas de Interés": layer_ZONASDEINTERESparsed_12,
+            "Educación": layer_Educacion
+        };
+
+        // Agrego control de capas
+        L.control.layers(baseLayers, overlays, {collapsed: false}).addTo(map);
+
+        // Opcional: agrego algunas capas visibles al inicio
+        layer_1111111_13.addTo(map);
+        layer_ZONASDEINTERESparsed_12.addTo(map);
+        layer_Educacion.addTo(map);
+
+    </script>
+</body>
+</html>
